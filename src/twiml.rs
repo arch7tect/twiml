@@ -19,6 +19,8 @@ impl<T: TwiMLElement> ToXmlString for T {
         let mut xml = XMLBuilder::new()
             .version(XMLVersion::XML1_1)
             .encoding("UTF-8".into())
+            .break_lines(false)
+            .indent(false)
             .build();
         
         xml.set_root_element(self.to_xml());
