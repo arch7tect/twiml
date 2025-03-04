@@ -86,7 +86,7 @@ fn main() {
     let response6 = Response::new()
         .say(Say::new("Connecting you to sales."))
         .dial(
-            Dial::new(None::<String>)
+            Dial::new_empty()
                 .timeout(20)
                 .caller_id("+15551234567")
                 .action("/handle-dial-status")
@@ -108,7 +108,7 @@ fn main() {
     // Example 7: SMS Message
     let response7 = Response::new()
         .message(
-            Message::new(None::<String>)
+            Message::new_empty()
                 .to("+15551234567")
                 .from("+15559876543")
                 .action("/message-status")
