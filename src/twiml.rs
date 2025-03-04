@@ -209,9 +209,144 @@ mod elements {
             self.factory.children.push(Box::new(pause));
             self
         }
+
+        /// Set actionOnEmptyResult attribute
+        pub fn action_on_empty_result(mut self, enable: bool) -> Self {
+            self.factory.attributes.push(("actionOnEmptyResult".to_string(), enable.to_string()));
+            self
+        }
+
+        /// Set enhanced attribute for enhanced speech recognition
+        pub fn enhanced(mut self, enable: bool) -> Self {
+            self.factory.attributes.push(("enhanced".to_string(), enable.to_string()));
+            self
+        }
+
+        /// Set speechModel attribute
+        pub fn speech_model(mut self, model: impl Into<String>) -> Self {
+            self.factory.attributes.push(("speechModel".to_string(), model.into()));
+            self
+        }
+
+        /// Set speechTimeout attribute (auto, none, or a number of milliseconds)
+        pub fn speech_timeout(mut self, timeout: impl Into<String>) -> Self {
+            self.factory.attributes.push(("speechTimeout".to_string(), timeout.into()));
+            self
+        }
+
+        /// Set partialResultsCallback attribute
+        pub fn partial_results_callback(mut self, url: impl Into<String>) -> Self {
+            self.factory.attributes.push(("partialResultsCallback".to_string(), url.into()));
+            self
+        }
+
+        /// Set partialResultsCallbackMethod attribute
+        pub fn partial_results_callback_method(mut self, method: impl Into<String>) -> Self {
+            self.factory.attributes.push(("partialResultsCallbackMethod".to_string(), method.into()));
+            self
+        }
+
+        /// Set profanityFilter attribute
+        pub fn profanity_filter(mut self, enable: bool) -> Self {
+            self.factory.attributes.push(("profanityFilter".to_string(), enable.to_string()));
+            self
+        }
+
+        /// Set speechResult attribute
+        pub fn speech_result(mut self, result_format: impl Into<String>) -> Self {
+            self.factory.attributes.push(("speechResult".to_string(), result_format.into()));
+            self
+        }
+
+        /// Set interdigitTimeout attribute (seconds)
+        pub fn interdigit_timeout(mut self, timeout: usize) -> Self {
+            self.factory.attributes.push(("interdigitTimeout".to_string(), timeout.to_string()));
+            self
+        }
+
+        /// Set for attribute to specify the input mode: digits or speech (used with enhanced)
+        pub fn for_attr(mut self, for_value: impl Into<String>) -> Self {
+            self.factory.attributes.push(("for".to_string(), for_value.into()));
+            self
+        }
+
+        /// Set statusCallback attribute
+        pub fn status_callback(mut self, url: impl Into<String>) -> Self {
+            self.factory.attributes.push(("statusCallback".to_string(), url.into()));
+            self
+        }
+
+        /// Set statusCallbackMethod attribute
+        pub fn status_callback_method(mut self, method: impl Into<String>) -> Self {
+            self.factory.attributes.push(("statusCallbackMethod".to_string(), method.into()));
+            self
+        }
+
+        /// Set speechContexts attribute
+        pub fn speech_contexts(mut self, contexts: impl Into<String>) -> Self {
+            self.factory.attributes.push(("speechContexts".to_string(), contexts.into()));
+            self
+        }
+
+        /// Set speechDetectorSensitivity attribute
+        pub fn speech_detector_sensitivity(mut self, sensitivity: impl Into<String>) -> Self {
+            self.factory.attributes.push(("speechDetectorSensitivity".to_string(), sensitivity.into()));
+            self
+        }
+
+        /// Add a Prompt child element
+        pub fn prompt(mut self, prompt: Prompt) -> Self {
+            self.factory.children.push(Box::new(prompt));
+            self
+        }
     }
 
     impl TwiMLElement for Gather {
+        fn to_xml(&self) -> XMLElement {
+            self.factory.to_xml()
+        }
+    }
+
+    /// Prompt TwiML Element for real-time enhanced speech recognition
+    #[derive(Debug)]
+    pub struct Prompt {
+        factory: ElementFactory,
+    }
+
+    impl Prompt {
+        /// Create a new Prompt element
+        pub fn new(text: impl Into<String>) -> Self {
+            Self {
+                factory: ElementFactory::new("Prompt", Some(text)),
+            }
+        }
+
+        /// Set attempt attribute
+        pub fn attempt(mut self, attempt: usize) -> Self {
+            self.factory.attributes.push(("attempt".to_string(), attempt.to_string()));
+            self
+        }
+
+        /// Set for attribute
+        pub fn for_attr(mut self, for_value: impl Into<String>) -> Self {
+            self.factory.attributes.push(("for".to_string(), for_value.into()));
+            self
+        }
+
+        /// Set voice attribute
+        pub fn voice(mut self, voice: impl Into<String>) -> Self {
+            self.factory.attributes.push(("voice".to_string(), voice.into()));
+            self
+        }
+
+        /// Set language attribute
+        pub fn language(mut self, language: impl Into<String>) -> Self {
+            self.factory.attributes.push(("language".to_string(), language.into()));
+            self
+        }
+    }
+
+    impl TwiMLElement for Prompt {
         fn to_xml(&self) -> XMLElement {
             self.factory.to_xml()
         }
@@ -1075,6 +1210,69 @@ mod tests {
     }
 }
 
+#[test]
+fn test_enhanced_gather() {
+    let response = Response::new()
+        .gather(
+            Gather::new()
+                .input("speech")
+                .language("en-US")
+                .enhanced(true)
+                .speech_model("phone_call")
+                .speech_timeout("auto")
+                .action("/process-speech")
+                .method("POST")
+                .partial_results_callback("/partial-results")
+                .partial_results_callback_method("POST")
+                .profanity_filter(true)
+                .speech_result("simple")
+                .action_on_empty_result(true)
+                .hints("yes no maybe cancel help")
+                .prompt(
+                    Prompt::new("Please tell us the reason for your call")
+                        .attempt(1)
+                        .for_attr("speech")
+                        .voice("alice")
+                        .language("en-US")
+                )
+        );
+
+    let xml_string = response.to_xml_string();
+    assert!(xml_string.contains("<Gather"));
+    assert!(xml_string.contains("input=\"speech\""));
+    assert!(xml_string.contains("enhanced=\"true\""));
+    assert!(xml_string.contains("speechModel=\"phone_call\""));
+    assert!(xml_string.contains("speechTimeout=\"auto\""));
+    assert!(xml_string.contains("partialResultsCallback=\"/partial-results\""));
+    assert!(xml_string.contains("profanityFilter=\"true\""));
+    assert!(xml_string.contains("actionOnEmptyResult=\"true\""));
+    assert!(xml_string.contains("<Prompt"));
+    assert!(xml_string.contains("for=\"speech\""));
+    assert!(xml_string.contains("Please tell us the reason for your call"));
+}
+
+#[test]
+fn test_dtmf_gather_with_interdigit_timeout() {
+    let response = Response::new()
+        .say(Say::new("Please enter your account number"))
+        .gather(
+            Gather::new()
+                .input("dtmf")
+                .num_digits("10")
+                .interdigit_timeout(5)
+                .timeout(15)
+                .action("/process-account")
+                .method("POST")
+                .finish_on_key("#")
+        );
+
+    let xml_string = response.to_xml_string();
+    assert!(xml_string.contains("<Gather"));
+    assert!(xml_string.contains("input=\"dtmf\""));
+    assert!(xml_string.contains("numDigits=\"10\""));
+    assert!(xml_string.contains("interdigitTimeout=\"5\""));
+    assert!(xml_string.contains("finishOnKey=\"#\""));
+}
 // Recommended Cargo.toml dependencies:
 // [dependencies]
 // xml-builder = "0.5.1"
