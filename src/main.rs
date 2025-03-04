@@ -1,6 +1,6 @@
 mod twiml;
 
-use crate::twiml::{Say, Response, Gather, Dial, Conference, Number, Record, Play, Client, Pause, Message, Body, Redirect, ToXmlString};
+use crate::twiml::{Say, Response, Gather, Dial, Conference, Number, Record, Play, Client, Pause, Redirect, ToXmlString, Message, Body};
 
 fn main() {
     // Example 1: Simple voice response
@@ -8,7 +8,7 @@ fn main() {
         .say(Say::new("Welcome to our service")
             .voice("alice")
             .language("en-US"))
-        .redirect("/next-step");
+        .redirect(Redirect::new("/next-step"));
     
     println!("Example 1: Simple Response\n{}\n", response1.to_xml_string());
 
@@ -24,7 +24,7 @@ fn main() {
                 .hints("support, sales, billing")
                 .say(Say::new("You can say support, sales, or billing"))
         )
-        .redirect("/fallback");
+        .redirect(Redirect::new("/fallback"));
     
     println!("Example 2: Speech Recognition\n{}\n", response2.to_xml_string());
 
@@ -43,7 +43,7 @@ fn main() {
                         .loop_times(3)
                 )
         )
-        .redirect("/timeout");
+        .redirect(Redirect::new("/timeout"));
     
     println!("Example 3: DTMF Menu\n{}\n", response3.to_xml_string());
 
@@ -51,14 +51,14 @@ fn main() {
     let response4 = Response::new()
         .say(Say::new("You are about to join the conference."))
         .dial(
-            Dial::new(None)
+            Dial::new(None::<String>)
                 .conference(
                     Conference::new("Room123")
                         .muted(false)
                         .start_conference_on_enter(true)
                         .end_conference_on_exit(false)
                         .max_participants(10)
-                        .beep("true")
+                        .beep(true)
                         .record("record-from-start")
                 )
         );
@@ -86,7 +86,7 @@ fn main() {
     let response6 = Response::new()
         .say(Say::new("Connecting you to sales."))
         .dial(
-            Dial::new(None)
+            Dial::new(None::<String>)
                 .timeout(20)
                 .caller_id("+15551234567")
                 .action("/handle-dial-status")
@@ -108,7 +108,7 @@ fn main() {
     // Example 7: SMS Message
     let response7 = Response::new()
         .message(
-            Message::new("")
+            Message::new(None::<String>)
                 .to("+15551234567")
                 .from("+15559876543")
                 .action("/message-status")
