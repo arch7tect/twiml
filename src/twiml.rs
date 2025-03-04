@@ -114,8 +114,8 @@ mod elements {
         }
 
         /// Add a Say child element
-        pub fn say(mut self, text: impl Into<String>) -> Self {
-            self.children.push(Box::new(Say::new(text)));
+        pub fn say(mut self, say: Say) -> Self {
+            self.children.push(Box::new(say));
             self
         }
     }
@@ -173,8 +173,8 @@ mod elements {
         }
 
         /// Add a Say child element
-        pub fn say(mut self, text: impl Into<String>) -> Self {
-            self.children.push(Box::new(Say::new(text)));
+        pub fn say(mut self, say: Say) -> Self {
+            self.children.push(Box::new(say));
             self
         }
 
@@ -215,7 +215,7 @@ mod tests {
     #[test]
     fn test_xml_string_conversion() {
         let response = Response::new()
-            .say("Welcome to our service")
+            .say(Say::new("Welcome to our service"))
             .redirect("/next-step");
         
         // Convert to String using to_xml_string()
