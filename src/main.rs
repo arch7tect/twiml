@@ -18,7 +18,9 @@ fn main() {
                 .action("/process-input")
                 .method("POST")
                 .num_digits("4")
-                .say(Say::new("Enter your 4-digit account number"))
+                .say(
+                    Say::new("Enter your 4-digit account number")
+                )
         )
         .redirect("/fallback");
     
